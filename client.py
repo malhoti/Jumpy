@@ -20,11 +20,12 @@ class Game:
         self.screen = pg.display.set_mode((screen_width, screen_height))
         pg.display.set_caption(title)
         self.clock = pg.time.Clock()
-        self.running = True
+        
+        
         self.send_more_platforms = False
         self.font_name = pg.font.match_font(font)
         self.p1ready = True
-        self.p2ready = False
+        
         self.player1lost = False
         self.player2lost = False
         self.endgame = False
@@ -81,7 +82,7 @@ class Game:
 
 
     def events(self):
-        self.p1ready = False # his makes you unready so that when sent to the server, it makes you already unready for when the game restarts so it doesnt have to do the check
+         # his makes you unready so that when sent to the server, it makes you already unready for when the game restarts so it doesnt have to do the check
         
         # Checks if anyone has won or lost first, this is so that if it is the case, then the client can send one last message to the server to let it know that this client lost or won
         if self.player1.rect.bottom >= self.spike.rect.top:
@@ -99,7 +100,6 @@ class Game:
             player2Pos = info_recv[0]
             self.player2.position.x = player2Pos[0]
             self.player2.position.y = player2Pos[1] +(self.player1.pushdown-player2Pos[2])
-            self.p2ready = player2Pos[3]
             platformPos = info_recv[1]
             self.player2lost = player2Pos[4]
 
@@ -123,12 +123,14 @@ class Game:
 
 
         if self.player1lost:
+            #self.p1ready = False
             self.endgame = True
             self.info_to_send =  self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
             self.network.send(self.info_to_send)
             self.show_go_screen()
 
         if self.player2lost:
+            #self.p1ready = False
             self.endgame = True
             self.info_to_send =  self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
             self.network.send(self.info_to_send)
@@ -136,6 +138,7 @@ class Game:
 
         for event in pg.event.get():
             if event.type == pg.QUIT:  # if they quit in-game the other person wins
+                self.p1ready = False
                 self.player1lost = True
                 self.endgame = True
                 self.info_to_send =  self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
@@ -143,7 +146,7 @@ class Game:
                 
                 if self.run:
                     self.run = False
-                self.running = False
+               
             if event.type == pg.KEYDOWN:    
                if event.key == pg.K_SPACE:
                   
@@ -162,7 +165,7 @@ class Game:
 
         # the spike will slowly get faster and faster!!
         for spike in self.spikes:
-            spike.rect.y -= (0)
+            spike.rect.y -= (1)
 
         #this is going to act like a camera shift when the player reaches around the top of the screen
         #and delete platforms that go off the screen
@@ -220,41 +223,76 @@ class Game:
         self.screen.fill(bgcolour)
         self.draw_text(TITLE, 48 , black,screen_width/2,screen_height/4)
         self.draw_text("press a key",56,red,screen_width/2,screen_height/2)
-        self.play_button = Button(screen_width/2,3*screen_width/4,"PLAY",green,20,70,40,self)
-        
+        self.play_button = Button(3*screen_width/8,7*screen_height/8,"PLAY",green,dimmed_green,20,screen_width*0.1,screen_height*0.05,self)
+        self.quit_button = Button(5*screen_width/8,7*screen_height/8,"QUIT",red,dimmed_red,20,screen_width*0.1,screen_height*0.05,self)
 
-       
+        self.buttons = []
 
-        
+        self.buttons.append(self.play_button)
+        self.buttons.append(self.quit_button)
         #pg.time.delay(500)#adding delay because if you spam a key it can gltich the game
        # if play_button:
        #     self.new()
-        self.wait_for_click()
+        self.wait_for_click(self.buttons)
+
+        self.buttons.clear()
+        if self.play_button.pressed :
+            self.new()
+        if self.quit_button.pressed:
+            self.run = False
+            quit()
         
 
     def show_lobby(self):
+
+        self.lobbychecking = True
         self.screen.fill(bgcolour)
         self.draw_text("WAITING IN LOBBY...",70,black,screen_width/2,screen_height/2)
-        pg.display.flip()
-        pg.time.delay(500)#adding delay because if you spam a key it can gltich the game
-        self.wait_for_player2()
-        self.run()
+        self.cancel_button = Button(screen_width/2,7*screen_height/8,"CANCEL",red,dimmed_red,20,screen_width*0.2,screen_height*0.1,self)
 
-    def wait_for_click(self):
+        
+        while self.lobbychecking:
+            self.cancel_button.draw()
+            self.wait_for_player2()
+
+        
+
+            if self.cancel_button.pressed:
+                print("clicked")
+                self.endgame = True
+                self.p1ready = False
+                self.info_to_send =  self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
+                self.network.send(self.info_to_send)
+                self.lobbychecking = False
+                self.show_menu()
+                
+
+            
+
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    self.lobbychecking = False
+                    self.run = False
+            pg.display.flip()
+        
+
+    def wait_for_click(self,buttons):
         waiting = True
         while waiting:
             
             self.clock.tick(fps)
-            self.play_button.draw()
-            clicked = self.play_button.check_click()
+            for button in buttons:
+                button.draw()
+            #self.play_button.draw()
+           
             
-            if clicked:
-                waiting = False
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
+                if button.pressed:
                     waiting = False
-                    self.run = False
-                    quit()
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        waiting = False
+                        self.run = False
+                        quit()
             
             pg.display.flip()
 
@@ -273,20 +311,27 @@ class Game:
 
 
     def wait_for_player2(self):
-        waiting = True
-        while waiting:
-            self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
-            info_recv = self.network.send((self.info_to_send))
-            
-            
+        self.p1ready = True
+        self.endgame = False
+        
+        self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
+        
+        info_recv = self.network.send((self.info_to_send))
+        
+        
+        try:
             if info_recv[0][3]:
+                print("other player joined")
+                self.lobbychecking = False
+                self.run()
+        except Exception as e:
+            pass
+        
+        self.clock.tick(fps)
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
                 waiting = False
-           
-            self.clock.tick(fps)
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    waiting = False
-                    self.run = False
+                self.run = False
             
     
             
@@ -333,6 +378,6 @@ while True:
     print("new game")
     game.show_menu()
 
-    game.new()
+    
 
 pg.quit()  
