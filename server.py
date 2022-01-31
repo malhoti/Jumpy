@@ -10,6 +10,7 @@ from settings import *
 import time
 
 
+
 from settings import *
 
 hostname = socket.gethostname()  # this gets the hostname 
@@ -31,9 +32,11 @@ except: # if the 'binding' fails instead of crashing we send an output of the er
 sock.listen(2) # opens the socket making it ready to accept connection, it takes one arguement, limiting how many clients can join the server. If empty it is unlimited
 # if all goes well up to here, the server has started and is waiting for connections
 
+
 print("SERVER STARTED!")
 
 #players = [Player(0,0,100,100,(0,255,0)),Player(30,200,100,100,(255,0,0))]
+
 
 
 
@@ -63,8 +66,8 @@ def threaded_client(connection, player,gameId):
     print(games)
     global idCount
     
-    opponent_to_disconnect = False
     
+   
 
     player1 = 0
     player2 = 1
@@ -102,107 +105,106 @@ def threaded_client(connection, player,gameId):
     
     while True:
         
+       
+        
         
         try:
-            data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
-
             
             
-            game = games[gameId]
-            game[player] = data[0]
-            send_platform = data[1]
-            lost = data [0][4]
-
-            if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
-                print("Disconnected")
-                game[player] = [0,0,0,False,True,False] #this allows the other player know he won
-                break
-
-            else:
-
-                if send_platform:
-                    temp_plat = make_platform(False,0)
-                    game[player1_platform].append(temp_plat)
-                    game[player2_platform].append(temp_plat)
-
-                if player == 1:
-                    reply = game[player1]
+            try:
+                data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
+                
+            except :
+                pass     
+                
                     
-                    new_platform = copy.deepcopy(game[player2_platform]) # this copies the list onto the other
+                   
+                
+                
+            
+            
+            if gameId in games:
+                game = games[gameId]
+                game[player] = data[0]
+                send_platform = data[1]
+                lost = data [0][4]
+
+                if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
+                    print("Disconnected")
+                    game[player] = [0,0,0,False,True,False] #this allows the other player know he won
+                    break
+
+                else:
+
+                    if data == "disconnect":
+                        break
+                    if data == 'lost' or data == 'won':
+                        break
                     if send_platform:
-                        for platform in game[player1_platform]:
-                            platform[1] = platform[1]-(game[player2][2]-game[player1][2])
-                                            
-                    
-                    game[player2_platform].clear()
-                    
-                    
-                else: 
-                    
-                    reply =  game[player2]
-                    
-                    new_platform= copy.deepcopy(game[player1_platform])
-                    if send_platform: 
-                        for platform in game[player2_platform]: 
+                        temp_plat = make_platform(False,0)
+                        game[player1_platform].append(temp_plat)
+                        game[player2_platform].append(temp_plat)
+
+                    if player == 1:
+                        reply = game[player1]
                         
-                            platform[1] = platform[1]-(game[player1][2]-game[player2][2])
-                    
+                        new_platform = copy.deepcopy(game[player2_platform]) # this copies the list onto the other
+                        if send_platform:
+                            for platform in game[player1_platform]:
+                                platform[1] = platform[1]-(game[player2][2]-game[player1][2])
+                                                
+                        
+                        game[player2_platform].clear()
+                        
+                        
+                    else: 
+                        
+                        reply =  game[player2]
+                        
+                        new_platform= copy.deepcopy(game[player1_platform])
+                        if send_platform: 
+                            for platform in game[player2_platform]: 
+                            
+                                platform[1] = platform[1]-(game[player1][2]-game[player2][2])
+                        
 
-                    
-                    game[player1_platform].clear()
-                    
+                        
+                        game[player1_platform].clear()
+                        
 
-            
-            connection.sendall(pickle.dumps([reply,new_platform])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+                
+                connection.sendall(pickle.dumps([reply,new_platform])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
+                
             #print(games)
             #print(game[player1][5],game[player2][5],game[player1][3],game[player2][3])
-
-            if (game[player1][5] and game[player2][5] ) or (not(game[player1][3]and game[player2][3])) and games[gameId][player][5]:
-                print(player)
-                opponent_to_disconnect = True
-                #idCount += -1
+            else:
                 break
-
-            
+               
 
         except Exception as e:
             print(player,'error',e) 
 
             
-            return
+            break
             
-            
-
+        
     time.sleep(0.5)
     print(player,"Lost connection")
 
    
     
-    #this resets the players values
-
-   # print(games[gameId][player1][5], games[gameId][player2][5])
     
-
-    try:
-        if (not(games[gameId][player1][3] and games[gameId][player2][3])) and games[gameId][player][5] :
-            print("somone left")
-            idCount += -1
-    except:
-        pass
-        
-    if game[player1][5] and game[player2][5]:
-        idCount += -2
 
     try:
         del games[gameId]
-        print('closing game', gameId)
+        print('Closing game', gameId)
     except Exception as e:
         print (e)
     
-
+    idCount += -1
 
     
-    print(player, idCount,"this is the idcount when the game is deleted")
+    
     connection.close() # we close connection if we lose connection, so that client could joi back if they want. not adding this would cause a confusion or crash
 
 # threading is basically allowing many function to be processed at the same time. For this case, whilst the while loop is running, if it callsthreaded_client, it doesnt need that function to finish to carry on the while loop, the while loop will still run whilt the function is also running
@@ -223,7 +225,7 @@ while True:
 
     #(x, y, pushdown, ready, lost,endgame)
     if idCount % 2 == 1:
-        games[gameId] = [[1,2,3,False,False,False],[4,5,6,False,False,False],[],[]]
+        games[gameId] = [[1,2,3,False,False],[4,5,6,False,False],[],[]]
        
     else:
         

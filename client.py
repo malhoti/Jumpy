@@ -28,7 +28,7 @@ class Game:
         
         self.player1lost = False
         self.player2lost = False
-        self.endgame = False
+        
 
 
     def new(self):
@@ -89,7 +89,7 @@ class Game:
             print("you lost")
             self.player1lost = True
 
-        self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
+        self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
         info_recv = self.network.send((self.info_to_send))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
         
         self.send_more_platforms = False 
@@ -124,25 +124,23 @@ class Game:
 
         if self.player1lost:
             #self.p1ready = False
-            self.endgame = True
-            self.info_to_send =  self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
-            self.network.send(self.info_to_send)
+            
+            
+            self.network.send("endgame")
             self.show_go_screen()
 
         if self.player2lost:
             #self.p1ready = False
-            self.endgame = True
-            self.info_to_send =  self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
-            self.network.send(self.info_to_send)
+            
+            
+            self.network.send("endgame")
             self.show_victory_screen()
 
         for event in pg.event.get():
             if event.type == pg.QUIT:  # if they quit in-game the other person wins
-                self.p1ready = False
-                self.player1lost = True
-                self.endgame = True
-                self.info_to_send =  self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
-                self.network.send(self.info_to_send)
+                print('i discoonnected')
+                
+                self.network.send("endgame")
                 
                 if self.run:
                     self.run = False
@@ -259,10 +257,8 @@ class Game:
 
             if self.cancel_button.pressed:
                 print("clicked")
-                self.endgame = True
-                self.p1ready = False
-                self.info_to_send =  self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
-                self.network.send(self.info_to_send)
+
+                self.network.send("endgame")
                 self.lobbychecking = False
                 self.show_menu()
                 
@@ -312,9 +308,9 @@ class Game:
 
     def wait_for_player2(self):
         self.p1ready = True
-        self.endgame = False
         
-        self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost,self.endgame],self.send_more_platforms
+        
+        self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
         
         info_recv = self.network.send((self.info_to_send))
         
