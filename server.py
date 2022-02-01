@@ -96,7 +96,7 @@ def threaded_client(connection, player,gameId):
                 games[gameId][player2_platform].append(start_platform) 
                 
 
-                for i in range(START_plat_num):
+                for i in range(START_plat_num-1):
                     start_plat = make_platform(True,i,plat_width,plat_height,screen_height)
                     games[gameId][player1_platform].append(start_plat) 
                     games[gameId][player2_platform].append(start_plat)   

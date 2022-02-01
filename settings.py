@@ -1,11 +1,12 @@
 import math
 # window settings
 TITLE = "JUMPY"
-screen_width=300
+screen_width=700
 screen_height = 800
 title = "Game"
 fps = 60
 font = 'arial'
+HIGHSCORE_FILE = 'highscore.txt'
 
 # player settings
 PLAYER_acceleration = 0.5
@@ -16,7 +17,7 @@ PLAYER_jump = 20
 
 #Platfroms
 PLATFROM_ARRAY = [(2,0, screen_height-40, screen_width,40)]
-START_plat_num = int(math.ceil(screen_height/150))
+START_plat_num = int(math.ceil(screen_height/140))
                 
 
 #global varibales

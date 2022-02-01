@@ -10,6 +10,7 @@ from button import Button
 from settings import *
 import time
 import random
+from os import path
 
 
 class Solo:
@@ -20,7 +21,22 @@ class Solo:
         pg.display.set_caption(title)
         self.clock = pg.time.Clock()
         self.font_name = pg.font.match_font(font)
-       
+        self.load_data()
+    
+    def load_data(self):
+        try:
+            with open(HIGHSCORE_FILE,'r') as f:
+                try:
+                    print('i read')
+                    self.highscore = int(f.read())
+                except:
+                    self.highscore = 0
+            f.close()
+        except:
+            with open(HIGHSCORE_FILE,'w') as f:
+                self.highscore = 0
+                
+            
     def new(self):
         self.score = 0
         
@@ -39,7 +55,7 @@ class Solo:
         
 
         start_plat=[[0,int((7*screen_height)/8),screen_width,200]]
-        for i in range(START_plat_num):
+        for i in range(START_plat_num-1):
                 start_plat.append(self.make_platform(True,i))
               
         for platform in start_plat:
@@ -205,26 +221,28 @@ class Solo:
     
             
     def show_end_screen(self):   
-        self.screen.fill(red)
-        self.draw_text("YOU LOST", 70, black,screen_width/2,screen_height/4)
-        self.draw_text(("Press a key..."+str(self.player)),16,black,screen_width/2,screen_height/2)
+        self.screen.fill(bgcolour)
+        self.draw_text("YOU LOST", int(screen_width *0.1), black,screen_width/2,screen_height/4)
+        self.draw_text("Score:"+str(self.score),int(screen_width*0.1),black,screen_width/2,5*screen_height/8)
+        self.draw_text(("Press a key"),int(screen_width*0.02),black,screen_width/2,screen_height/2)
+        if self.score > self.highscore:
+            
+            self.highscore = self.score
+            self.draw_text("NEW HIGH SCORE",int(screen_width*0.1),black,screen_width/2,6*screen_height/8)
+            with open(HIGHSCORE_FILE, 'w') as f:
+                print(self.score)
+                f.write(str(self.score))
+            f.close()
+        else:
+            self.draw_text("Highscore:" + str(self.highscore),int(screen_width*0.1),black,screen_width/2,6*screen_height/8)
+
         pg.display.flip()
         pg.time.delay(1000)# adding delay so the player has time to see if they lost or not
         self.wait_for_key()
         self.run = False
         
         
-    def show_victory_screen(self):
-        self.screen.fill(green)
-        self.draw_text("YOU WON", 70, black,screen_width/2,screen_height/4)
-        self.draw_text(("Press a key..."+str(self.player)),16,black,screen_width/2,screen_height/2)
-        
-        pg.display.flip()
-        pg.time.delay(1000)
-        self.wait_for_key()
-        self.run = False
-        
-        
+
         
     def draw(self):
         
