@@ -248,8 +248,8 @@ class Game:
 
         self.lobbychecking = True
         self.screen.fill(bgcolour)
-        self.draw_text("WAITING IN LOBBY...",70,black,screen_width/2,screen_height/2)
-        self.cancel_button = Button(screen_width/2,7*screen_height/8,"CANCEL",red,dimmed_red,20,screen_width*0.2,screen_height*0.1,self)
+        self.draw_text("WAITING IN LOBBY...",int(screen_width *0.1),black,screen_width/2,screen_height/2)
+        self.cancel_button = Button(screen_width/2,7*screen_height/8,"CANCEL",red,dimmed_red,20,int(screen_width*0.2),int(screen_height*0.1),self)
 
         
         while self.lobbychecking:
@@ -336,8 +336,8 @@ class Game:
             
     def show_go_screen(self):   
         self.screen.fill(red)
-        self.draw_text("YOU LOST", 70, black,screen_width/2,screen_height/4)
-        self.draw_text(("Press a key..."+str(self.player)),16,black,screen_width/2,screen_height/2)
+        self.draw_text("YOU LOST", int(screen_width *0.1), black,screen_width/2,screen_height/4)
+        self.draw_text("Press a key...",int(screen_width *0.04),black,screen_width/2,screen_height/2)
         pg.display.flip()
         pg.time.delay(1000)# adding delay so the player has time to see if they lost or not
         self.wait_for_key()
@@ -346,11 +346,20 @@ class Game:
         
     def show_victory_screen(self):
         self.screen.fill(green)
-        self.draw_text("YOU WON", 70, black,screen_width/2,screen_height/4)
-        self.draw_text(("Press a key..."+str(self.player)),16,black,screen_width/2,screen_height/2)
+        self.draw_text("YOU WON", int(screen_width *0.1), black,screen_width/2,screen_height/4)
+        self.draw_text("Press a key...",int(screen_width *0.04),black,screen_width/2,screen_height/2)
         
         pg.display.flip()
         pg.time.delay(1000)
+        self.wait_for_key()
+        self.run = False
+
+    def server_problem(self):
+        self.screen.fill(bgcolour)
+        self.draw_text("SERVER ISSUES", int(screen_width *0.1), black,screen_width/2,screen_height/4)
+        self.draw_text("Problem connecting to server...",int(screen_width *0.04),black,screen_width/2,screen_height/2)
+        self.draw_text("Press a key...",int(screen_width *0.045),black,screen_width/2,3*screen_height/4)
+        pg.display.flip()
         self.wait_for_key()
         self.run = False
         
@@ -382,7 +391,10 @@ while True:
         solo.new()
 
     else:
-        game.new()
+        try:
+            game.new()
+        except:
+            game.server_problem()
        
     
 

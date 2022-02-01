@@ -199,7 +199,7 @@ def threaded_client(connection, player,gameId):
             break
             
         
-    time.sleep(0.5)
+   
     print('Player',player,"Lost connection")
 
    

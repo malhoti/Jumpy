@@ -222,9 +222,9 @@ class Solo:
             
     def show_end_screen(self):   
         self.screen.fill(bgcolour)
-        self.draw_text("YOU LOST", int(screen_width *0.1), black,screen_width/2,screen_height/4)
+        self.draw_text("GAME OVER", int(screen_width *0.1), black,screen_width/2,screen_height/4)
         self.draw_text("Score:"+str(self.score),int(screen_width*0.1),black,screen_width/2,5*screen_height/8)
-        self.draw_text(("Press a key"),int(screen_width*0.02),black,screen_width/2,screen_height/2)
+        self.draw_text(("Press a key"),int(screen_width*0.05),black,screen_width/2,screen_height/2)
         if self.score > self.highscore:
             
             self.highscore = self.score
