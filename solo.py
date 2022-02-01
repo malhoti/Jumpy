@@ -39,6 +39,8 @@ class Solo:
             
     def new(self):
         self.score = 0
+        self.spike_speed = 1
+        self.start_time = time.time()
         
         self.player = Player(screen_width/2,screen_height-100,self,green)
        
@@ -105,7 +107,15 @@ class Solo:
 
         # the spike will slowly get faster and faster!!
         for spike in self.spikes:
-            spike.rect.y -= (1)
+            if self.spike_speed <=4 :
+                self.end_time = time.time()
+                elapsed_time = self.end_time - self.start_time
+                
+                if int(elapsed_time) >= 18: 
+                    self.start_time = self.end_time
+                    self.spike_speed += 1
+            
+            spike.rect.y -= (self.spike_speed)
 
         #this is going to act like a camera shift when the player reaches around the top of the screen
         #and delete platforms that go off the screen

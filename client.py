@@ -31,14 +31,14 @@ class Game:
         self.player2lost = False
         
 
-
     def new(self):
         
         self.network = Network()
         self.starting_info = self.network.getP() # get the information sent from the server
         self.player = self.starting_info[0]
+
+        self.start_time = time.time()
        
-        print("You are player", int(self.player) +1)
         if int(self.player) == 0:
             
             self.player1 = Player(screen_width*0.1,int((7*screen_height)/8),self,green)
@@ -63,8 +63,8 @@ class Game:
         self.spikes.add(self.spike)
 
         self.score = 0
+        self.spike_speed = 1
         
-
         for i in range(len(platformPos)):
 
             p = Platform(*platformPos[i])       # *platformPos[i] is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
@@ -92,10 +92,8 @@ class Game:
 
         self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
         info_recv = self.network.send((self.info_to_send))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
-        print(info_recv)
         self.send_more_platforms = False 
 
-        
         # changing player 2 attributes when the server sent its details
         try:
             player2Pos = info_recv[0]
@@ -103,7 +101,6 @@ class Game:
             self.player2.position.y = player2Pos[1] +(self.player1.pushdown-player2Pos[2])
             platformPos = info_recv[1]
             self.player2lost = player2Pos[4]
-
 
             for i in range(len(platformPos)):  # 
             
@@ -115,32 +112,20 @@ class Game:
                     self.platforms.add(p)
         except:
             self.player2lost = True
-        
-
-
-       
-        
+    
         self.player2.update()
 
-
         if self.player1lost:
-            
             self.network.send("endgame")
             self.show_go_screen()
 
         if self.player2lost:
-            #self.p1ready = False
-            
-            
             self.network.send("endgame")
             self.show_victory_screen()
 
         for event in pg.event.get():
             if event.type == pg.QUIT:  # if they quit in-game the other person wins
-                print('i discoonnected')
-                
                 self.network.send("endgame")
-                
                 if self.run:
                     self.run = False
                
@@ -162,7 +147,16 @@ class Game:
 
         # the spike will slowly get faster and faster!!
         for spike in self.spikes:
-            spike.rect.y -= (1)
+            if self.spike_speed <=4 :
+                self.end_time = time.time()
+                elapsed_time = self.end_time - self.start_time
+                
+                if int(elapsed_time) >= 18: 
+                    self.start_time = self.end_time
+                    self.spike_speed += 1
+                
+                
+            spike.rect.y -= (self.spike_speed)
 
         #this is going to act like a camera shift when the player reaches around the top of the screen
         #and delete platforms that go off the screen
@@ -256,18 +250,11 @@ class Game:
             self.cancel_button.draw()
             self.wait_for_player2()
 
-        
-
             if self.cancel_button.pressed:
-                print("clicked")
-
                 self.network.send("endgame")
                 self.lobbychecking = False
                 self.show_menu()
                 
-
-            
-
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.lobbychecking = False
