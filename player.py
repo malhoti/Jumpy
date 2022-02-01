@@ -12,7 +12,7 @@ class Player(pygame.sprite.Sprite):
         self.colour = colour
         self.game = game 
 
-        self.image = pygame.Surface((40, 70))
+        self.image = pygame.Surface((int(screen_width*0.057), int(screen_height*0.0875)))
         self.image.fill(colour)
         self.rect = self.image.get_rect()
         self.position = vec(x,y)

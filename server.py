@@ -6,7 +6,7 @@ from platforms import Platform
 import random
 import pickle
 import copy
-from settings import *
+
 import time
 
 
@@ -40,15 +40,15 @@ print("SERVER STARTED!")
 
 
 
-def make_platform(onscreen,i):
+def make_platform(onscreen,i,width,height,screen_height):
     
     if onscreen:
-        platform = [random.randint(0,screen_width-80),int(i*(screen_height/START_plat_num)),80,40] 
+        platform = [random.randint(0,screen_width-width),int(i*(screen_height/START_plat_num)),width,height] 
 
     else:
         try:
-            yrange =  random.randint(-55,-40) # make platform out of screen
-            platform= [random.randint(0,screen_width-80), yrange,80,40] 
+            yrange =  random.randint(int(-screen_height*0.06875),int(-screen_height*0.05)) # make platform out of screen
+            platform= [random.randint(0,screen_width-width), yrange,width,height] 
         except:
             pass
 
@@ -63,45 +63,61 @@ idCount = 0
 leaving_players = 0
 
 def threaded_client(connection, player,gameId): 
-    print(games)
+ 
     global idCount
-    
-    
-   
 
     player1 = 0
     player2 = 1
     player1_platform = 2
     player2_platform = 3
 
-  
-    
-    start_platform = [0,int((7*screen_height)/8),screen_width,200]
-
-    if player == 0:
-        if gameId in games:
-            game = games[gameId]
-            games[gameId][player1_platform].append(start_platform) 
-            games[gameId][player2_platform].append(start_platform) 
-            
-
-            for i in range(START_plat_num):
-                start_plat = make_platform(True,i)
-                games[gameId][player1_platform].append(start_plat) 
-                games[gameId][player2_platform].append(start_plat)   
     try:
+       
+        data = pickle.loads(connection.recv(2048))
+        print(data)
+        screen_width = data[0]
+        screen_height = data[1]
+        START_plat_num = data[2]
+
+        plat_width = int(screen_width*0.11)
+        plat_height = int (screen_height*0.05)
+
+        
+
+
+
+
+        start_platform = [0,int((7*screen_height)/8),screen_width,screen_height/8]
+
+        if player == 0:
+            if gameId in games:
+                game = games[gameId]
+                games[gameId][player1_platform].append(start_platform) 
+                games[gameId][player2_platform].append(start_platform) 
+                
+
+                for i in range(START_plat_num):
+                    start_plat = make_platform(True,i,plat_width,plat_height,screen_height)
+                    games[gameId][player1_platform].append(start_plat) 
+                    games[gameId][player2_platform].append(start_plat)   
+
+
         connection.send(pickle.dumps((str(player),games[gameId][player+2])))
-    except Exception as e:
-        print(e)
 
-    try:
-        print(games[gameId][player+2])   
-        games[gameId][player+2].clear()
+        try:   
+            
+            games[gameId][player+2].clear()
+        except Exception as e:
+            print(e)
+
+
+
     except Exception as e:
         print(e)
-        print('list was empty')
+        
 
     reply= []
+    
     
     while True:
         
@@ -117,17 +133,12 @@ def threaded_client(connection, player,gameId):
             except :
                 pass     
                 
-                    
-                   
-                
-                
-            
-            
+        
             if gameId in games:
                 game = games[gameId]
                 game[player] = data[0]
                 send_platform = data[1]
-                lost = data [0][4]
+                
 
                 if not data:  # if no data was sent from client, it means they are not in connection, so we print disconnected
                     print("Disconnected")
@@ -141,7 +152,7 @@ def threaded_client(connection, player,gameId):
                     if data == 'lost' or data == 'won':
                         break
                     if send_platform:
-                        temp_plat = make_platform(False,0)
+                        temp_plat = make_platform(False,0,plat_width,plat_height,screen_height)
                         game[player1_platform].append(temp_plat)
                         game[player2_platform].append(temp_plat)
 
@@ -189,7 +200,7 @@ def threaded_client(connection, player,gameId):
             
         
     time.sleep(0.5)
-    print(player,"Lost connection")
+    print('Player',player,"Lost connection")
 
    
     

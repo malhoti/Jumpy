@@ -15,14 +15,14 @@ class Button(pg.sprite.Sprite):
         self.y = y
 
         
-        
+        self.size = size
         
         self.game = Game
         self.text  = text
         #self.top_rect = pg.Rect(pos,(width,height))
         # self.top_colour = '#52de1b'
         
-        self.font = pg.font.Font(None,size)
+        self.font = pg.font.Font(None,self.size)
         self.text_surf = self.font.render(self.text,True,(0,0,0)) #this gives all options
         
         self.text_rect = self.text_surf.get_rect()
@@ -32,6 +32,11 @@ class Button(pg.sprite.Sprite):
     def draw(self):
         self.rect.center = (self.x,self.y)
         self.text_rect.center = (self.x,self.y)
+
+        
+        
+        
+        
         pg.draw.rect(self.game.screen,self.draw_colour,self.rect,border_radius= 12)
         self.game.screen.blit(self.text_surf,self.text_rect)
         self.check_click()

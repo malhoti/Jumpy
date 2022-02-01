@@ -9,6 +9,7 @@ from player import Player
 from button import Button
 import pickle
 from settings import *
+from solo import Solo
 import time
 
 
@@ -40,11 +41,11 @@ class Game:
         print("You are player", int(self.player) +1)
         if int(self.player) == 0:
             
-            self.player1 = Player(40,screen_height-100,self,green)
+            self.player1 = Player(screen_width*0.1,int((7*screen_height)/8),self,green)
             self.player2 = Player(0,screen_height+150,self,red)
         else:
-            self.player1 = Player(screen_width-40,(7*screen_height)/8,self,red)
-            self.player2 = Player(40,screen_height-100,self,green)
+            self.player1 = Player(screen_width*0.9,(7*screen_height)/8,self,red)
+            self.player2 = Player(screen_width*0.1,int((7*screen_height)/8),self,green)
 
         
         platformPos = self.starting_info[1]
@@ -54,7 +55,7 @@ class Game:
         self.spikes = pg.sprite.Group()
         
 
-        self.spike = Spike(0,screen_height+200,screen_width,screen_height)
+        self.spike = Spike(0,screen_height*1.25,screen_width,screen_height)
         self.totalSprites.add(self.player1)
         self.totalSprites.add(self.player2)
         self.totalSprites.add(self.spike)
@@ -91,7 +92,7 @@ class Game:
 
         self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
         info_recv = self.network.send((self.info_to_send))  #when you send player1, the network sends player 2 to this client, and viceversa for player2 
-        
+        print(info_recv)
         self.send_more_platforms = False 
 
         
@@ -123,8 +124,6 @@ class Game:
 
 
         if self.player1lost:
-            #self.p1ready = False
-            
             
             self.network.send("endgame")
             self.show_go_screen()
@@ -219,14 +218,16 @@ class Game:
         
     def show_menu(self):
         self.screen.fill(bgcolour)
-        self.draw_text(TITLE, 48 , black,screen_width/2,screen_height/4)
-        self.draw_text("press a key",56,red,screen_width/2,screen_height/2)
-        self.play_button = Button(3*screen_width/8,7*screen_height/8,"PLAY",green,dimmed_green,20,screen_width*0.1,screen_height*0.05,self)
-        self.quit_button = Button(5*screen_width/8,7*screen_height/8,"QUIT",red,dimmed_red,20,screen_width*0.1,screen_height*0.05,self)
+        self.draw_text(TITLE, int(screen_width*0.30) , black,screen_width/2,screen_height/4)
+        self.draw_text("USE ARROW KEYS TO MOVE",int(screen_width*0.05),red,screen_width/2,screen_height/2)
+        self.solo_button = Button(3*screen_width/8,6*screen_height/8,"SOLO",green,dimmed_green,int(screen_width*0.05),screen_width*0.2,screen_height*0.075,self)
+        self.multiplayer_button = Button(5*screen_width/8,6*screen_height/8,"MULTIPLAYER",green,dimmed_green,int(screen_width*0.035),screen_width*0.2,screen_height*0.075,self)
+        self.quit_button = Button(4*screen_width/8,7*screen_height/8,"QUIT",red,dimmed_red,int(screen_width*0.05),screen_width*0.2,screen_height*0.075,self)
 
         self.buttons = []
 
-        self.buttons.append(self.play_button)
+        self.buttons.append(self.solo_button)
+        self.buttons.append(self.multiplayer_button)
         self.buttons.append(self.quit_button)
         #pg.time.delay(500)#adding delay because if you spam a key it can gltich the game
        # if play_button:
@@ -234,8 +235,10 @@ class Game:
         self.wait_for_click(self.buttons)
 
         self.buttons.clear()
-        if self.play_button.pressed :
-            self.new()
+        if self.solo_button.pressed :
+            return 'solo'
+        if self.multiplayer_button.pressed:
+            return 'multiplayer'
         if self.quit_button.pressed:
             self.run = False
             quit()
@@ -365,15 +368,22 @@ class Game:
         font = pg.font.Font(self.font_name, size)
         text_surface = font.render(text, True, colour)
         text_rect=text_surface.get_rect()
-        text_rect.midtop = (x,y)
+        
+        text_rect.center = (x,y)
         self.screen.blit(text_surface, text_rect)
 
 
 while True:
     game = Game()
     print("new game")
-    game.show_menu()
+    game_mode = game.show_menu()
+    if game_mode == 'solo':
+        solo = Solo()
+        solo.new()
 
+    else:
+        game.new()
+       
     
 
 pg.quit()  

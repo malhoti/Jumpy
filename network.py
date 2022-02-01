@@ -1,5 +1,6 @@
 import socket
 import pickle  #allows to send objects through network, it decodes and encodes for you
+from settings import *
 
 
 class Network:
@@ -20,10 +21,11 @@ class Network:
     
     def getP(self):
         return self.p
-    
+    #screen_width,screen_height,START_plat_num
     def connect(self):
         try:
             self.client.connect(self.address)
+            self.client.send(pickle.dumps((screen_width,screen_height,START_plat_num)))
             return pickle.loads(self.client.recv(2046))
         except:
             pass

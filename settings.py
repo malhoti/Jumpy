@@ -1,7 +1,7 @@
 import math
 # window settings
 TITLE = "JUMPY"
-screen_width=700
+screen_width=300
 screen_height = 800
 title = "Game"
 fps = 60
