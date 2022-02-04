@@ -14,15 +14,13 @@ import time
 
 
 
-class Game:
+class Game(Solo):
     def __init__(self):
         pg.init()
         pg.mixer.init()
         self.screen = pg.display.set_mode((screen_width, screen_height))
         pg.display.set_caption(title)
         self.clock = pg.time.Clock()
-        
-        
         self.send_more_platforms = False
         self.font_name = pg.font.match_font(font)
         self.p1ready = True
@@ -58,7 +56,7 @@ class Game:
         self.spike = Spike(0,screen_height*1.25,screen_width,screen_height)
         self.totalSprites.add(self.player1)
         self.totalSprites.add(self.player2)
-        self.totalSprites.add(self.spike)
+        
     
         self.spikes.add(self.spike)
 
@@ -70,9 +68,11 @@ class Game:
             p = Platform(*platformPos[i])       # *platformPos[i] is the same as plafrom[0],plafrom[1],plafrom[2],plafrom[3]
             self.totalSprites.add(p)
             self.platforms.add(p)
+
+        
         
         self.show_lobby()
-
+        
     def run(self):
         self.run = True
         while self.run:
@@ -130,7 +130,7 @@ class Game:
                     self.run = False
                
             if event.type == pg.KEYDOWN:    
-               if event.key == pg.K_SPACE:
+               if event.key == pg.K_UP:
                   
                    self.player1.jump()
         
@@ -223,9 +223,7 @@ class Game:
         self.buttons.append(self.solo_button)
         self.buttons.append(self.multiplayer_button)
         self.buttons.append(self.quit_button)
-        #pg.time.delay(500)#adding delay because if you spam a key it can gltich the game
-       # if play_button:
-       #     self.new()
+        
         self.wait_for_click(self.buttons)
 
         self.buttons.clear()
@@ -239,13 +237,11 @@ class Game:
         
 
     def show_lobby(self):
-
         self.lobbychecking = True
         self.screen.fill(bgcolour)
         self.draw_text("WAITING IN LOBBY...",int(screen_width *0.1),black,screen_width/2,screen_height/2)
         self.cancel_button = Button(screen_width/2,7*screen_height/8,"CANCEL",red,dimmed_red,20,int(screen_width*0.2),int(screen_height*0.1),self)
 
-        
         while self.lobbychecking:
             self.cancel_button.draw()
             self.wait_for_player2()
@@ -253,58 +249,21 @@ class Game:
             if self.cancel_button.pressed:
                 self.network.send("endgame")
                 self.lobbychecking = False
-                self.show_menu()
+                pg.time.delay(500)
+                self.server_problem(True)
                 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.lobbychecking = False
                     self.run = False
             pg.display.flip()
+       
         
-
-    def wait_for_click(self,buttons):
-        waiting = True
-        while waiting:
-            
-            self.clock.tick(fps)
-            for button in buttons:
-                button.draw()
-            #self.play_button.draw()
-           
-            
-                if button.pressed:
-                    waiting = False
-                for event in pg.event.get():
-                    if event.type == pg.QUIT:
-                        waiting = False
-                        self.run = False
-                        quit()
-            
-            pg.display.flip()
-
-                
-    def wait_for_key(self):
-        waiting = True
-        while waiting:
-            self.clock.tick(fps)
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    waiting = False
-                    self.run = False
-                    quit()
-                if event.type == pg.KEYUP:
-                    waiting = False
-
-
     def wait_for_player2(self):
         self.p1ready = True
-        
-        
         self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
-        
         info_recv = self.network.send((self.info_to_send))
-        
-        
+    
         try:
             if info_recv[0][3]:
                 print("other player joined")
@@ -341,33 +300,15 @@ class Game:
         self.wait_for_key()
         self.run = False
 
-    def server_problem(self):
-        self.screen.fill(bgcolour)
-        self.draw_text("SERVER ISSUES", int(screen_width *0.1), black,screen_width/2,screen_height/4)
-        self.draw_text("Problem connecting to server...",int(screen_width *0.04),black,screen_width/2,screen_height/2)
-        self.draw_text("Press a key...",int(screen_width *0.045),black,screen_width/2,3*screen_height/4)
-        pg.display.flip()
-        self.wait_for_key()
-        self.run = False
-        
-        
-        
-    def draw(self):
-        
-        self.screen.fill(white)
-        self.totalSprites.draw(self.screen)
-        self.spike.draw(self.screen)
-        self.draw_text(str(self.score), 22, red,screen_width-50,30)
-        pg.display.update() # updates the whole screen, try to limit the times you update screen as this is the most intensive code. slowing the animation by a lot
-
-    def draw_text(self, text, size, colour, x,y):
-        font = pg.font.Font(self.font_name, size)
-        text_surface = font.render(text, True, colour)
-        text_rect=text_surface.get_rect()
-        
-        text_rect.center = (x,y)
-        self.screen.blit(text_surface, text_rect)
-
+    def server_problem(self,returned_from_cancel):
+        if not(returned_from_cancel):
+            self.screen.fill(bgcolour)
+            self.draw_text("SERVER ISSUES", int(screen_width *0.1), black,screen_width/2,screen_height/4)
+            self.draw_text("Problem connecting to server...",int(screen_width *0.04),black,screen_width/2,screen_height/2)
+            self.draw_text("Press a key...",int(screen_width *0.045),black,screen_width/2,3*screen_height/4)
+            pg.display.flip()
+            self.wait_for_key()
+            self.run = False
 
 while True:
     game = Game()
@@ -380,9 +321,10 @@ while True:
     else:
         try:
             game.new()
+    
         except:
-            game.server_problem()
+            
+            game.server_problem(False)
        
     
 
-pg.quit()  

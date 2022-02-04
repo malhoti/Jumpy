@@ -1,4 +1,5 @@
 import math
+import os
 # window settings
 TITLE = "JUMPY"
 screen_width=700

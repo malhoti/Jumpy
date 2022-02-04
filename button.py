@@ -32,11 +32,6 @@ class Button(pg.sprite.Sprite):
     def draw(self):
         self.rect.center = (self.x,self.y)
         self.text_rect.center = (self.x,self.y)
-
-        
-        
-        
-        
         pg.draw.rect(self.game.screen,self.draw_colour,self.rect,border_radius= 12)
         self.game.screen.blit(self.text_surf,self.text_rect)
         self.check_click()

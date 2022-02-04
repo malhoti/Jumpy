@@ -82,11 +82,6 @@ def threaded_client(connection, player,gameId):
         plat_width = int(screen_width*0.11)
         plat_height = int (screen_height*0.05)
 
-        
-
-
-
-
         start_platform = [0,int((7*screen_height)/8),screen_width,screen_height/8]
 
         if player == 0:
@@ -120,20 +115,12 @@ def threaded_client(connection, player,gameId):
     
     
     while True:
-        
-       
-        
-        
         try:
-            
-            
             try:
                 data = pickle.loads(connection.recv(2048)) # number of bits that the connection can recieve
-                
             except :
                 pass     
                 
-        
             if gameId in games:
                 game = games[gameId]
                 game[player] = data[0]
@@ -177,34 +164,19 @@ def threaded_client(connection, player,gameId):
                             for platform in game[player2_platform]: 
                             
                                 platform[1] = platform[1]-(game[player1][2]-game[player2][2])
-                        
-
-                        
+                    
                         game[player1_platform].clear()
-                        
 
-                
                 connection.sendall(pickle.dumps([reply,new_platform])) # this data is sent back to the client in encoded form, meaning it will have to be decoded by the client once again
-                
-            #print(games)
-            #print(game[player1][5],game[player2][5],game[player1][3],game[player2][3])
+    
             else:
                 break
-               
-
+            
         except Exception as e:
             print(player,'error',e) 
-
-            
             break
             
-        
-   
     print('Player',player,"Lost connection")
-
-   
-    
-    
 
     try:
         del games[gameId]
@@ -213,15 +185,10 @@ def threaded_client(connection, player,gameId):
         print (e)
     
     idCount += -1
-
-    
-    
     connection.close() # we close connection if we lose connection, so that client could joi back if they want. not adding this would cause a confusion or crash
 
 # threading is basically allowing many function to be processed at the same time. For this case, whilst the while loop is running, if it callsthreaded_client, it doesnt need that function to finish to carry on the while loop, the while loop will still run whilt the function is also running
 # this is so that it is always allowing for connections to connect. if the function is being run, and a client joins the server, then they wont be able to join as te while loop isnt running at that current time. so threading fixes that problem
-
-
 
 while True:
     #print(ip_address)
@@ -233,7 +200,6 @@ while True:
     player = 0
     gameId = (idCount-1)//2
 
-
     #(x, y, pushdown, ready, lost,endgame)
     if idCount % 2 == 1:
         games[gameId] = [[1,2,3,False,False],[4,5,6,False,False],[],[]]
@@ -241,8 +207,6 @@ while True:
     else:
         
         player = 1
-
-    #print(games)
 
     start_new_thread(threaded_client,(connection,player,gameId))
     

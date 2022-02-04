@@ -25,9 +25,9 @@ class Solo:
     
     def load_data(self):
         try:
-            with open(HIGHSCORE_FILE,'r') as f:
+            self.directory = path.dirname(__file__)
+            with open(path.join(self.directory,HIGHSCORE_FILE),'r') as f:
                 try:
-                    print('i read')
                     self.highscore = int(f.read())
                 except:
                     self.highscore = 0
@@ -35,12 +35,15 @@ class Solo:
         except:
             with open(HIGHSCORE_FILE,'w') as f:
                 self.highscore = 0
-                
-            
+            f.close()
+     
     def new(self):
         self.score = 0
         self.spike_speed = 1
         self.start_time = time.time()
+
+        self.platform_width = int(screen_width*0.11)
+        self.platform_height = int(screen_width*0.05)
         
         self.player = Player(screen_width/2,screen_height-100,self,green)
        
@@ -90,7 +93,7 @@ class Solo:
                     self.run = False
                
             if event.type == pg.KEYDOWN:    
-               if event.key == pg.K_SPACE:
+               if event.key == pg.K_UP:
                   
                    self.player.jump()
         
@@ -128,21 +131,13 @@ class Solo:
                 spike.rect.y +=  round(abs(self.player.velocity.y))
             for platform in self.platforms:
                 platform.rect.y += round(abs(self.player.velocity.y))
-                if platform.rect.top >= spike.rect.top:
+                
+                    
+        for platform in self.platforms:
+                
+                if platform.rect.top >= self.spike.rect.top:
                     platform.kill()
                     self.score += 1
-
-        # checks collsions for the platforms     
-        # hits = pg.sprite.pygame.sprite.spritecollide(spike, self.platforms, False)
-        # if hits:
-        #     if self.spike.rect.top<hits[0].rect.top:
-        #         hits[0].kill()
-        #         self.score += 1
-
-        
-
-
-
         # going down
         if self.player.velocity.y>=0:
             if self.player.rect.bottom >(7*screen_height)/8:
@@ -157,6 +152,7 @@ class Solo:
         # this checks wether if there is a platform 1/8 above the screen, if there arent make a new platform, if there are above the 1/8 of screen dont send more platforms
         empty_above = False
         count = 0
+        
         for platform in self.platforms:
             
             if platform.rect.y <screen_height/8 : 
@@ -178,12 +174,13 @@ class Solo:
         
     def make_platform(self,onscreen,i):
         if onscreen:
-            platform = [random.randint(0,screen_width-int(screen_width*0.11)),int(i*(screen_height/START_plat_num)),int(screen_width*0.11),int (screen_height*0.05)] 
+            #int (screen_height*0.025)
+            platform = [random.randint(0,screen_width-self.platform_width),int(i*(screen_height/START_plat_num)),self.platform_width,self.platform_height] 
 
         else:
             try:
                 yrange =  random.randint(int(-screen_height*0.06875),int(-screen_height*0.05)) # make platform out of screen
-                platform= [random.randint(0,screen_width-int(screen_width*0.11)), yrange,int(screen_width*0.11),int (screen_height*0.05)] 
+                platform= [random.randint(0,screen_width-self.platform_width), yrange,self.platform_width,self.platform_height] 
             except:
                 pass
 
@@ -233,14 +230,13 @@ class Solo:
     def show_end_screen(self):   
         self.screen.fill(bgcolour)
         self.draw_text("GAME OVER", int(screen_width *0.1), black,screen_width/2,screen_height/4)
-        self.draw_text("Score:"+str(self.score),int(screen_width*0.1),black,screen_width/2,5*screen_height/8)
+        self.draw_text("Your Score:"+str(self.score),int(screen_width*0.1),black,screen_width/2,5*screen_height/8)
         self.draw_text(("Press a key"),int(screen_width*0.05),black,screen_width/2,screen_height/2)
         if self.score > self.highscore:
             
             self.highscore = self.score
             self.draw_text("NEW HIGH SCORE",int(screen_width*0.1),black,screen_width/2,6*screen_height/8)
-            with open(HIGHSCORE_FILE, 'w') as f:
-                print(self.score)
+            with open(path.join(self.directory, HIGHSCORE_FILE), 'w') as f: # saving score on file
                 f.write(str(self.score))
             f.close()
         else:
@@ -258,7 +254,7 @@ class Solo:
         
         self.screen.fill(white)
         self.totalSprites.draw(self.screen)
-        self.spike.draw(self.screen)
+        self.spikes.draw(self.screen)
         self.draw_text(str(self.score), 22, red,screen_width-50,30)
         pg.display.update() # updates the whole screen, try to limit the times you update screen as this is the most intensive code. slowing the animation by a lot
 
@@ -266,7 +262,7 @@ class Solo:
         font = pg.font.Font(self.font_name, size)
         text_surface = font.render(text, True, colour)
         text_rect=text_surface.get_rect()
-        text_rect.midtop = (x,y)
+        text_rect.center = (x,y)
         self.screen.blit(text_surface, text_rect)
 
 
