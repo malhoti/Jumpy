@@ -38,7 +38,7 @@ class Solo:
             f.close()
      
     def new(self):
-        self.score = 0
+        self.score = -1
         self.spike_speed = 1
         self.start_time = time.time()
 
@@ -57,6 +57,8 @@ class Solo:
         self.totalSprites.add(self.player)
         self.totalSprites.add(self.spike)
         self.spikes.add(self.spike)
+
+        self.touched_platform = []
         
 
         start_plat=[[0,int((7*screen_height)/8),screen_width,200]]
@@ -99,12 +101,18 @@ class Solo:
         
     def update(self):
         self.player.move()
+
+        
         
         # what this does, is it only checks collisions whilst falling, not whilst jumping
         if self.player.velocity.y>= 0 :  
             hits = pg.sprite.spritecollide(self.player, self.platforms, False)
             if hits :
+               
                 if self.player.position.y < hits[0].rect.bottom:
+                    if hits not in self.touched_platform:  
+                        self.touched_platform.append(hits)
+                        self.score += 1
                     self.player.position.y = hits[0].rect.top
                     self.player.velocity.y = 0
 
@@ -136,8 +144,9 @@ class Solo:
         for platform in self.platforms:
                 
                 if platform.rect.top >= self.spike.rect.top:
+                    self.touched_platform.pop(0)
                     platform.kill()
-                    self.score += 1
+                    #self.score += 1
         # going down
         if self.player.velocity.y>=0:
             if self.player.rect.bottom >(7*screen_height)/8:
@@ -213,6 +222,7 @@ class Solo:
     def wait_for_key(self):
         waiting = True
         while waiting:
+            
             self.clock.tick(fps)
             for event in pg.event.get():
                 if event.type == pg.QUIT:

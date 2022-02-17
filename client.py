@@ -60,8 +60,10 @@ class Game(Solo):
     
         self.spikes.add(self.spike)
 
-        self.score = 0
+        self.score = -1
         self.spike_speed = 1
+
+        self.touched_platform = []
         
         for i in range(len(platformPos)):
 
@@ -142,6 +144,9 @@ class Game(Solo):
             hits = pg.sprite.spritecollide(self.player1, self.platforms, False)
             if hits :
                 if self.player1.position.y < hits[0].rect.bottom:
+                    if hits not in self.touched_platform:  
+                        self.touched_platform.append(hits)
+                        self.score += 1
                     self.player1.position.y = hits[0].rect.top
                     self.player1.velocity.y = 0
 
@@ -173,12 +178,19 @@ class Game(Solo):
             for platform in self.platforms:
                 platform.rect.y += round(abs(self.player1.velocity.y))
 
-        # checks collsions for the platforms     
-        hits = pg.sprite.pygame.sprite.spritecollide(spike, self.platforms, False)
-        if hits:
-            if self.spike.rect.top<hits[0].rect.top:
-                hits[0].kill()
-                self.score += 1
+        # checks collsions for the platforms  
+        # 
+        for platform in self.platforms:
+                
+                if platform.rect.top >= self.spike.rect.top:
+                    self.touched_platform.pop(0)
+                    platform.kill()
+                    #self.score += 1   
+        # hits = pg.sprite.pygame.sprite.spritecollide(spike, self.platforms, False)
+        # if hits:
+        #     if self.spike.rect.top<hits[0].rect.top:
+        #         hits[0].kill()
+        #         self.score += 1
 
         # going down
         if self.player1.velocity.y>=0:
@@ -280,11 +292,15 @@ class Game(Solo):
             
     
             
-    def show_go_screen(self):   
+    def show_go_screen(self): 
+         
         self.screen.fill(red)
         self.draw_text("YOU LOST", int(screen_width *0.1), black,screen_width/2,screen_height/4)
-        self.draw_text("Press a key...",int(screen_width *0.04),black,screen_width/2,screen_height/2)
+        self.draw_text(("Your Score:"+str(self.score)), int(screen_width *0.1), black,screen_width/2,screen_height/2)
+        self.draw_text("Press a key...",int(screen_width *0.04),black,screen_width/2,3*screen_height/4)
+        print('hello')
         pg.display.flip()
+        print('hello') 
         pg.time.delay(1000)# adding delay so the player has time to see if they lost or not
         self.wait_for_key()
         self.run = False
@@ -293,9 +309,11 @@ class Game(Solo):
     def show_victory_screen(self):
         self.screen.fill(green)
         self.draw_text("YOU WON", int(screen_width *0.1), black,screen_width/2,screen_height/4)
-        self.draw_text("Press a key...",int(screen_width *0.04),black,screen_width/2,screen_height/2)
-        
+        self.draw_text(("Your Score:"+str(self.score)), int(screen_width *0.1), black,screen_width/2,screen_height/2)
+        self.draw_text("Press a key...",int(screen_width *0.04),black,screen_width/2,3*screen_height/4)
+        print('hello')
         pg.display.flip()
+         
         pg.time.delay(1000)
         self.wait_for_key()
         self.run = False
