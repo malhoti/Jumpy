@@ -42,8 +42,8 @@ class Game(Solo):
             self.player1 = Player(screen_width*0.1,int((7*screen_height)/8),self,green)
             self.player2 = Player(0,screen_height+150,self,red)
         else:
-            self.player1 = Player(screen_width*0.9,(7*screen_height)/8,self,red)
-            self.player2 = Player(screen_width*0.1,int((7*screen_height)/8),self,green)
+            self.player1 = Player(screen_width*0.9,(7*screen_height)/8,self,green)
+            self.player2 = Player(screen_width*0.1,int((7*screen_height)/8),self,red)
 
         
         platformPos = self.starting_info[1]
@@ -89,7 +89,6 @@ class Game(Solo):
         
         # Checks if anyone has won or lost first, this is so that if it is the case, then the client can send one last message to the server to let it know that this client lost or won
         if self.player1.rect.bottom >= self.spike.rect.top:
-            print("you lost")
             self.player1lost = True
 
         self.info_to_send=[int(self.player1.position.x), int(self.player1.position.y),self.player1.pushdown,self.p1ready,self.player1lost],self.send_more_platforms
@@ -278,7 +277,6 @@ class Game(Solo):
     
         try:
             if info_recv[0][3]:
-                print("other player joined")
                 self.lobbychecking = False
                 self.run()
         except Exception as e:
@@ -298,9 +296,7 @@ class Game(Solo):
         self.draw_text("YOU LOST", int(screen_width *0.1), black,screen_width/2,screen_height/4)
         self.draw_text(("Your Score:"+str(self.score)), int(screen_width *0.1), black,screen_width/2,screen_height/2)
         self.draw_text("Press a key...",int(screen_width *0.04),black,screen_width/2,3*screen_height/4)
-        print('hello')
-        pg.display.flip()
-        print('hello') 
+        pg.display.flip() 
         pg.time.delay(1000)# adding delay so the player has time to see if they lost or not
         self.wait_for_key()
         self.run = False
@@ -311,7 +307,6 @@ class Game(Solo):
         self.draw_text("YOU WON", int(screen_width *0.1), black,screen_width/2,screen_height/4)
         self.draw_text(("Your Score:"+str(self.score)), int(screen_width *0.1), black,screen_width/2,screen_height/2)
         self.draw_text("Press a key...",int(screen_width *0.04),black,screen_width/2,3*screen_height/4)
-        print('hello')
         pg.display.flip()
          
         pg.time.delay(1000)
@@ -330,7 +325,6 @@ class Game(Solo):
 
 while True:
     game = Game()
-    print("new game")
     game_mode = game.show_menu()
     if game_mode == 'solo':
         solo = Solo()

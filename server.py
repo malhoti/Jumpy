@@ -17,6 +17,7 @@ hostname = socket.gethostname()  # this gets the hostname
 ip_address = socket.gethostbyname(hostname) 
 
 server = str(ip_address)
+print(server)
 port = 5555  # port that is open and free to use
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -74,7 +75,6 @@ def threaded_client(connection, player,gameId):
     try:
        
         data = pickle.loads(connection.recv(2048))
-        print(data)
         screen_width = data[0]
         screen_height = data[1]
         START_plat_num = data[2]
@@ -191,9 +191,8 @@ def threaded_client(connection, player,gameId):
 # this is so that it is always allowing for connections to connect. if the function is being run, and a client joins the server, then they wont be able to join as te while loop isnt running at that current time. so threading fixes that problem
 
 while True:
-    #print(ip_address)
     connection, address = sock.accept()
-    print("\n\n\n\n\n\n\n\n\n\n\n\n\nConnected to:" , address)
+    print("\n\n\nConnected to:" , address)
 
     idCount += 1
     print(idCount,"this is the idCount")
