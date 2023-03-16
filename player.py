@@ -5,19 +5,12 @@ vec = pygame.math.Vector2 # vectors for easier handling when creating positions
 class Player(pygame.sprite.Sprite):
     def __init__(self,x,y,game,colour):
         pygame.sprite.Sprite.__init__(self)
-        # self.x = x
-        # self.y = y
-        # self.width = width
-        # self.height = height
         self.colour = colour
-        self.game = game 
-        #(int(screen_width*0.057), int(screen_height*0.0875))    
+        self.game = game   
         self.image = pygame.Surface((40,70))
         self.image.fill(colour)
         self.rect = self.image.get_rect()
         self.position = vec(x,y)
-        #self.rect.midbottom = self.position 
-        
         self.velocity = vec(0,0)
         self.acceleration = vec(0,0)
         self.pushdown = 0
@@ -43,12 +36,11 @@ class Player(pygame.sprite.Sprite):
     # which is why when we update the client code, we call move for player1, but only update for player2 so that player 2 cant move only when a second client joins    
     def update(self):  
 
-        self.falling = False
-
         # applying friction in movement
         self.acceleration.x += self.velocity.x * PLAYER_friction
         self.velocity += self.acceleration
         self.position += self.acceleration*0.5 + self.velocity
+
         
              
        # switching to other side of screen if it hits the edge
@@ -60,9 +52,7 @@ class Player(pygame.sprite.Sprite):
             self.jumping = True
         self.rect.midbottom = self.position # sets the mid bottom of the rect to these coordinate the position of rectangle
         
-#self.rect.x += 1 
-    #self.rect.x -= 1    
-
+   
     def jump(self):
         #jump allowed only if standing on a platform
         hits = pygame.sprite.spritecollide(self, self.game.platforms, False)

@@ -185,11 +185,7 @@ class Game(Solo):
                     self.touched_platform.pop(0)
                     platform.kill()
                     #self.score += 1   
-        # hits = pg.sprite.pygame.sprite.spritecollide(spike, self.platforms, False)
-        # if hits:
-        #     if self.spike.rect.top<hits[0].rect.top:
-        #         hits[0].kill()
-        #         self.score += 1
+        
 
         # going down
         if self.player1.velocity.y>=0:
@@ -334,7 +330,8 @@ while True:
         try:
             game.new()
     
-        except:
+        except Exception as e:
+            print(e)
             
             game.server_problem(False)
        

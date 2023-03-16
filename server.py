@@ -193,13 +193,11 @@ def threaded_client(connection, player,gameId):
 while True:
     connection, address = sock.accept()
     print("\n\n\nConnected to:" , address)
-
     idCount += 1
     print(idCount,"this is the idCount")
     player = 0
     gameId = (idCount-1)//2
 
-    #(x, y, pushdown, ready, lost,endgame)
     if idCount % 2 == 1:
         games[gameId] = [[1,2,3,False,False],[4,5,6,False,False],[],[]]
        

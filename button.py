@@ -13,15 +13,9 @@ class Button(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
-
-        
         self.size = size
-        
         self.game = Game
         self.text  = text
-        #self.top_rect = pg.Rect(pos,(width,height))
-        # self.top_colour = '#52de1b'
-        
         self.font = pg.font.Font(None,self.size)
         self.text_surf = self.font.render(self.text,True,(0,0,0)) #this gives all options
         
